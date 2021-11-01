@@ -50,14 +50,14 @@
         <main id="container">
             <div id="side-panel">
      
-                <h2>Earthquake List</h2>
-                <button>Sort by Magnitude</button>
+                <h2>Locations of Nuclear and Solar Power Plants in the United States</h2>
+                <button>Sort by Latitude</button>
      
                 <table>
                     <tr>
-                        <th>id</th>
-                        <th>magnitude</th>
-                        <th>timestamp</th>
+                        <th>Latitude</th>
+                        <th>Longitude</th>
+                        <th>Type</th>
                     </tr>
                 </table>
      
@@ -68,7 +68,7 @@
             mapboxgl.accessToken = 'pk.eyJ1IjoieW9kYXBhbmNha2UiLCJhIjoiY2t2ZnZvdm13MWtvdzJ2bnlqYTQzdDhmMSJ9.rnBOImNMD9lhPHqRPMLrTg';
             let map = new mapboxgl.Map({
                 container: 'map', // container ID
-                style: 'mapbox://styles/mapbox/satellite-v9', // style URL
+                style: 'mapbox://styles/mapbox/outdoors-v11', // style URL
                 zoom: 3, // starting zoom
                 center: [-105, 44] // starting center
             })
@@ -76,61 +76,91 @@
             async function geojsonFetch() {
                 
                 let response, earthquakes, japan, table;
-                response = await fetch('assets/earthquakes.geojson');
-                earthquakes = await response.json();
-                response = await fetch('assets/japan.json');
-                japan = await response.json();
+                response = await fetch('assets/Nuclear.geojson');
+                nuclear = await response.json();
+
+                response = await fetch('assets/solar.geojson');
+                solar = await response.json();
+                
+                response = await fetch('assets/map.geojson');
+                unitedstates = await response.json();
             
                 map.on('load', function loadingData() {
 
-map.addSource('earthquakes', {
+
+                    map.addSource('unitedstates', {
     type: 'geojson',
-    data: earthquakes
+    data: unitedstates
 });
 
 map.addLayer({
-    'id': 'earthquakes-layer',
-    'type': 'circle',
-    'source': 'earthquakes',
+    'id': 'unitedstates-layer',
+    'type': 'fill',
+    'source': 'unitedstates',
     'paint': {
-        'circle-radius': 8,
-        'circle-stroke-width': 2,
+        'fill-color': '#0080ff', // blue color fill
+        'fill-opacity': 0.3
+    }
+});
+map.addSource('nuclear', {
+    type: 'geojson',
+    data: nuclear
+});
+
+map.addLayer({
+    'id': 'nuclear-layer',
+    'type': 'circle',
+    'source': 'nuclear',
+    'paint': {
+        'circle-radius': 4,
+        'circle-stroke-width': 1,
         'circle-color': 'red',
         'circle-stroke-color': 'white'
     }
 });
 
-map.addSource('japan', {
+map.addSource('solar', {
     type: 'geojson',
-    data: japan
+    data: solar
 });
 
 map.addLayer({
-    'id': 'japan-layer',
-    'type': 'fill',
-    'source': 'japan',
+    'id': 'solar-layer',
+    'type': 'circle',
+    'source': 'solar',
     'paint': {
-        'fill-color': '#0080ff', // blue color fill
-        'fill-opacity': 0.5
+        'circle-radius': 4,
+        'circle-stroke-width': 1,
+        'circle-color': 'blue',
+        'circle-stroke-color': 'white'
     }
 });
+
 
 });
 
 table = document.getElementsByTagName("table")[0];
 let row, cell1, cell2, cell3;
-for (let i = 0; i < earthquakes.features.length; i++) {
+for (let i = 0; i < nuclear.features.length; i++) {
     // Create an empty <tr> element and add it to the 1st position of the table:
     row = table.insertRow(-1);
     cell1 = row.insertCell(0);
     cell2 = row.insertCell(1);
     cell3 = row.insertCell(2);
-    cell1.innerHTML = earthquakes.features[i].properties.id;
-    cell2.innerHTML = earthquakes.features[i].properties.mag;
-    cell3.innerHTML = new Date(earthquakes.features[i].properties.time).toLocaleDateString(
-        "en-US");
+    cell1.innerHTML = nuclear.features[i].properties.testlat;
+    cell2.innerHTML = nuclear.features[i].properties.testlon;
+    cell3.innerHTML = nuclear.features[i].properties.PLFUELCT;
 }
-
+for (let i = 0; i < solar.features.length; i++) {
+    // Create an empty <tr> element and add it to the 1st position of the table:
+    row = table.insertRow(-1);
+    cell1 = row.insertCell(0);
+    cell2 = row.insertCell(1);
+    cell3 = row.insertCell(2);
+    cell1.innerHTML = solar.features[i].properties.testlat;
+    cell2.innerHTML = solar.features[i].properties.testlon;
+    cell3.innerHTML = solar.features[i].properties.PLFUELCT;
+}
 
 };
 
